@@ -18,6 +18,10 @@
   "icons": {
     "96": "img/containers.svg"
   },
+   "options_ui": {
+      "page": "options/options.html",
+      "browser_style": true
+  },
   "description": "Change theme colour based on your container color",
   "manifest_version": 2,
   "name": "Containers theme",

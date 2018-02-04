@@ -59,7 +59,14 @@ class containersTheme {
 
   async changeTheme(currentCookieStore, windowId, container) {
     this.cachedCookieStore = currentCookieStore;
-    const newColor = this.shadeColor(container.colorCode, 0.6);
+
+    let intensity = 0;
+    const {options} = await browser.storage.local.get("options");
+    if (options && options.intensity) {
+      intensity = options.intensity;
+    }
+
+    const newColor = this.shadeColor(container.colorCode, intensity);
     return browser.theme.update(windowId, {
       images: {
         headerURL: "",
