@@ -1,12 +1,18 @@
 class containersTheme {
   constructor() {
-    browser.tabs.onActivated.addListener(() => {
+    browser.runtime.getBrowserInfo().then(info => {
+      const version = info.version.match(/^(\d+)/);
+      this.useThemePropertiesWhenOlderThanFirefox65 = (version < 65);
+
+      browser.tabs.onActivated.addListener(() => {
+        this.getCurrentContainer();
+      });
+      browser.windows.onFocusChanged.addListener(() => {
+        this.getCurrentContainer();
+      });
+
       this.getCurrentContainer();
     });
-    browser.windows.onFocusChanged.addListener(() => {
-      this.getCurrentContainer();
-    });
-    this.getCurrentContainer();
   }
 
   async getCurrentContainer() {
@@ -67,15 +73,34 @@ class containersTheme {
     }
 
     const newColor = this.shadeColor(container.colorCode, intensity);
-    return browser.theme.update(windowId, {
+
+    const theme = {
       images: {
-        headerURL: "",
+        theme_frame: "",
       },
       colors: {
-        accentcolor: newColor,
-        textcolor: "#111",
+        frame: newColor,
+        tab_background_text: "#111",
       }
-    });
+    };
+
+    if (this.useThemePropertiesWhenOlderThanFirefox65) {
+      this.transformThemeForOlderThanFirefox65(theme);
+    }
+
+    return browser.theme.update(windowId, theme);
+  }
+
+  transformThemeForOlderThanFirefox65(theme) {
+    // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/theme#Aliases
+
+    theme.images.headerUrl = theme.images.theme_frame;
+    theme.colors.accentcolor = theme.colors.frame;
+    theme.colors.textcolor = theme.colors.tab_background_text;
+
+    delete theme.images.theme_frame;
+    delete theme.colors.frame;
+    delete theme.colors.tab_background_text;
   }
 
 }
